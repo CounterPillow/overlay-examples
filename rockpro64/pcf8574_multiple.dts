@@ -1,0 +1,29 @@
+/* SPDX-License-Identifier: MIT */
+
+/* This example overlay describes two daisy-chained PCF8574 GPIO extender
+ * connected to the ROCKPro64's I2C pins on its pin header.
+ * Refer to pcf8574.dts for more information.
+ */
+
+/dts-v1/;
+/plugin/;
+
+&i2c8 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	pcf8574_1: pcf8574@20 {			/* New child node with label "pcf8574_1", I2C address 0x20 */
+		compatible = "nxp,pcf8574";	/* Identifier for kernel to know what driver to load */
+		reg = <0x20>;			/* Describe the I2C address as being 0x20 */
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	pcf8574_2: pcf8574@21 {			/* New child node with label "pcf8574_2", I2C address 0x21 */
+		compatible = "nxp,pcf8574";	/* Identifier for kernel to know what driver to load */
+		reg = <0x21>;			/* Describe the I2C address as being 0x21 */
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+};

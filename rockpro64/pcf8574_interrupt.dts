@@ -1,0 +1,37 @@
+/* SPDX-License-Identifier: MIT */
+
+/* This example overlay describes a PCF8574 GPIO extender connected to the
+ * ROCKPro64's I2C pins on its pin header. In this example, there interrupt
+ * pin of the PCF8574 has also been connected to pin 7 on the ROCKPro64.
+ * See pcf8574.dts for more details.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+
+&i2c8 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	pcf8574: pcf8574@20 {
+		compatible = "nxp,pcf8574";
+		reg = <0x20>;
+		gpio-controller;
+		interrupt-controller;
+		/* Which GPIO controller the pin belongs to, in this case number 4 */
+		interrupt-parent = <&gpio4>;
+		/* Which pin of the interrupt parent is used as the interrupt pin,
+		 * including when the interrupt fires. In this case, when the logic
+		 * level transitions from high to low (i.e. when it falls).
+		 * The pin here, RK_PD0, corresponds to GPIO4_D0 in the schematics
+		 * and pin 7 on the pin headers.
+		 */
+		interrupts = <RK_PD0 IRQ_TYPE_EDGE_FALLING>;
+		#gpio-cells = <2>;
+		#interrupt-cells = <2>;		/* Required for interrupt controllers */
+	};
+};
