@@ -5,13 +5,16 @@ DTC ?= dtc
 DTCFLAGS ?= -@
 CPPFLAGS ?= -nostdinc -traditional-cpp -I$(INCLUDE_DIR)
 
-all: build/rockpro64 $(DTBS)
+all: build/rockpro64 build/rock64 $(DTBS)
 
 build:
 	mkdir build
 
 build/rockpro64: build
 	mkdir build/rockpro64
+
+build/rock64: build
+	mkdir build/rock64
 
 build/%.dtsp: %.dts
 	cpp $(CPPFLAGS) $^ -o $@
