@@ -1,0 +1,36 @@
+/* SPDX-License-Identifier: MIT */
+
+/* This example overlay describes a BMM150 magnetometer connected to the
+ * ROCKPro64's I2C pins on its pin header.
+ * The SDO and CSB pins are pulled low to set the address to 0x10,
+ * and the PS pin is pulled high to set the mode to I2C.
+ * It will show up in /sys/bus/iio/devices
+ */
+
+/dts-v1/;
+/plugin/;			/* Identifies this as an overlay */
+
+&i2c8 {				/* We are modifying the i2c8 node of the base tree */
+	/* The next two are already set in the base tree we're overlaying onto,
+	 * but dtc doesn't know this, so it emits warnings. Either way, they
+	 * describe what the meaning of all the children's reg properties is. In
+	 * this case, that the only cell in reg describes what address the device
+	 * listens on.
+	 */
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";	/* Enable the I2C node of rk3399.dtsi */
+
+	bmm150: magnetometer@10 {		/* New child node with label "bmm150", address 0x10 */
+            compatible = "bosch,bmm150";	/* Identifier for the kernel to know what driver to load */
+            reg = <0x10>;			/* Describe the I2C address as 0x10 (= decimal 16) */
+            /* What follows is the (optional) "mount matrix", which describes how the sensor is
+             * mounted in 3d space. In this example, we rotate it around z by 90°.
+             * See https://elixir.bootlin.com/linux/latest/source/Documentation/devicetree/bindings/iio/mount-matrix.txt
+             * for more details.
+             */
+            mount-matrix = "0", "-1", "0",
+			   "1",  "0", "0",
+			   "0",  "0", "1";
+	};
+};
