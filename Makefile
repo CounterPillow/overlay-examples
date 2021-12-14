@@ -3,7 +3,7 @@ DTS = $(shell find -name '*.dts')
 DTBS = $(addprefix build/,$(addsuffix .dtbo,$(basename $(DTS))))
 DTC ?= dtc
 DTCFLAGS ?= -@
-CPPFLAGS ?= -nostdinc -traditional-cpp -I$(INCLUDE_DIR)
+CPPFLAGS ?= -E -nostdinc -I$(INCLUDE_DIR) -undef -D__DTS__ -x assembler-with-cpp
 
 all: build/rockpro64 build/rock64 $(DTBS)
 
