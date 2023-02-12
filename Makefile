@@ -5,10 +5,13 @@ DTC ?= dtc
 DTCFLAGS ?= -@
 CPPFLAGS ?= -E -nostdinc -I$(INCLUDE_DIR) -undef -D__DTS__ -x assembler-with-cpp
 
-all: build/rockpro64 build/rock64 $(DTBS)
+all: build/quartz64b build/rockpro64 build/rock64 $(DTBS)
 
 build:
 	mkdir build
+
+build/quartz64b: build
+	mkdir build/quartz64b
 
 build/rockpro64: build
 	mkdir build/rockpro64
