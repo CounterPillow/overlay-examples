@@ -22,15 +22,15 @@
 	status = "okay";	/* Enable the I2C node of rk356x.dtsi */
 
 	bmm150: magnetometer@10 {		/* New child node with label "bmm150", address 0x10 */
-            compatible = "bosch,bmm150";	/* Identifier for the kernel to know what driver to load */
-            reg = <0x10>;			/* Describe the I2C address as 0x10 (= decimal 16) */
-            /* What follows is the (optional) "mount matrix", which describes how the sensor is
-             * mounted in 3d space. In this example, we rotate it around z by 90°.
-             * See https://elixir.bootlin.com/linux/latest/source/Documentation/devicetree/bindings/iio/mount-matrix.txt
-             * for more details.
-             */
-            mount-matrix = "0", "-1", "0",
-			   "1",  "0", "0",
-			   "0",  "0", "1";
+		compatible = "bosch,bmm150";	/* Identifier for the kernel to know what driver to load */
+		reg = <0x10>;			/* Describe the I2C address as 0x10 (= decimal 16) */
+		/* What follows is the (optional) "mount matrix", which describes how the sensor is
+		 * mounted in 3d space. In this example, we rotate it around z by 90°.
+		 * See https://elixir.bootlin.com/linux/latest/source/Documentation/devicetree/bindings/iio/mount-matrix.txt
+		 * for more details.
+		 */
+		mount-matrix =  "0", "-1", "0",
+				"1",  "0", "0",
+				"0",  "0", "1";
 	};
 };
