@@ -1,0 +1,150 @@
+/* SPDX-License-Identifier: MIT */
+/* This example overlay describes the official PINE64 display connected to
+ * the Quartz64 Model A over MIPI-DSI. The backlight is described as being
+ * controlled through PWM, and has 5 brightness levels.
+ *
+ * Beware, there be dragons: RK356x CRU weirdness means we need to manually
+ * kindly ask the kernel to set the PLL_VPLL rate to close to or a multiple
+ * of the pixel clock rate (55000000 Hz).
+ */
+
+/dts-v1/;
+/plugin/;			/* Identifies this as an overlay */
+
+#include <dt-bindings/clock/rk3568-cru.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+#include <dt-bindings/soc/rockchip,vop2.h>
+
+/* Modify the root node of the base tree to add new nodes to it */
+&{/} {
+	/* Add a PWM backlight description, hooked up to pwm14 */
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		brightness-levels = <0 4 8 16 32 64 128 255>;
+		default-brightness-level = <5>;
+		pwms = <&pwm14 0 1000000 0>;
+	};
+
+	/* vcc3v3_lcd0 is controlled by an enable GPIO */
+	vcc3v3_lcd0: vcc3v3-lcd0 {
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpio = <&gpio2 RK_PC5 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&lcd0_pwren_h>;
+		regulator-name = "vcc3v3_lcd0";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		vin-supply = <&vcc_3v3>;
+	};
+
+	/* AVDD9V6 is a boost converter output at 9.6 volts derived from vcc3v3_lcd0 */
+	vdda9v6_lcd0: vdda9v6-lcd0 {
+		compatible = "regulator-fixed";
+		regulator-name = "vdda9v6_lcd0";
+		regulator-min-microvolt = <9600000>;
+		regulator-max-microvolt = <9600000>;
+		vin-supply = <&vcc3v3_lcd0>;
+	};
+};
+
+/* Workaround for RK3566 weirdness:
+ * We need to set PLL_VPLL close to (above) or a multiple of our panel's pixel clock
+ */
+&cru {
+	assigned-clocks = <&cru PLL_VPLL>;
+	assigned-clock-rates = <1100000000>;
+};
+
+&dsi_dphy0 {
+	status = "okay";
+};
+
+&dsi0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	mipi_panel: panel@0 {
+		compatible = "feiyang,fy07024di26a30d";
+		reg = <0>;
+		avdd-supply = <&vdda9v6_lcd0>;
+		backlight = <&backlight>;
+		dvdd-supply = <&vcc3v3_lcd0>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+
+				mipi_in_panel: endpoint {
+					remote-endpoint = <&dsi0_out_con>;
+				};
+			};
+		};
+	};
+};
+
+&dsi0_in {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	dsi0_in_vp1: endpoint {
+		remote-endpoint = <&vp1_out_dsi0>;
+	};
+};
+
+&dsi0_out {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	dsi0_out_con: endpoint {
+		remote-endpoint = <&mipi_in_panel>;
+	};
+};
+
+&pinctrl {
+	lcd0 {
+		lcd0_pwren_h: lcd0-pwren-h {
+			rockchip,pins = <2 RK_PC5 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	/* Copied from rk3568-pinctrl.dtsi */
+	pwm14 {
+		pwm14m1_pins: pwm14m1-pins {
+			rockchip,pins =
+				/* pwm14_m1 */
+				<4 RK_PC2 1 &pcfg_pull_none>;
+		};
+	};
+};
+
+&pwm14 {
+	/* Our PWM uses the M1 mux set of pins */
+	pinctrl-0 = <&pwm14m1_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+/* Assign the VOP's clock parent to PLL_VPLL, required according to macromorgan */
+&vop {
+	assigned-clocks = <&cru DCLK_VOP0>, <&cru DCLK_VOP1>;
+	assigned-clock-parents = <&pmucru PLL_HPLL>, <&cru PLL_VPLL>;
+};
+
+
+&vp1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	vp1_out_dsi0: endpoint@ROCKCHIP_VOP2_EP_MIPI0 {
+		reg = <ROCKCHIP_VOP2_EP_MIPI0>;
+		remote-endpoint = <&dsi0_in_vp1>;
+	};
+};
