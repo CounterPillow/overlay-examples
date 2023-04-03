@@ -1,0 +1,83 @@
+/* SPDX-License-Identifier: MIT */
+
+/* This example overlay describes an MCP23S17 I/O expander connected to the
+ * Quartz64 Model B's SPI pins on its pin header. The MCP23S17 acts as an interrupt
+ * controller and uses RK_PB0 as an interrupt pin.
+ * Your kernel needs to be built with CONFIG_PINCTRL_MCP23S08, including
+ * CONFIG_PINCTRL_MCP23S08_SPI.
+ */
+
+/dts-v1/;
+/plugin/;			/* Identifies this as an overlay */
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+
+&spi1 {				/* We are modifying the spi1 node of the base tree */
+	/* Set the pin muxes to the M1 mux configuration */
+	pinctrl-0 = <&spi1m1_cs0 &spi1m1_pins>;
+	/* The next two are already set in the base tree we're overlaying onto,
+	 * but dtc doesn't know this, so it emits warnings. Either way, they
+	 * describe what the meaning of all the children's reg properties is. In
+	 * this case, that the only cell in reg describes what address the device
+	 * listens on.
+	 */
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";	/* Enable the spi1 node of rk356x.dtsi */
+
+	/* Describe an mcp23s17 chip on chip select 0 of the bus */
+	mcp23s17: mcp23s17@0 {
+		compatible = "microchip,mcp23s17";	/* So the kernel knows which driver to load */
+		reg = <0>;				/* Chip select 0, so reg 0 */
+		gpio-controller;			/* Point out that this is a GPIO controller */
+		interrupt-controller;			/* Point out that this is an interrupt controller */
+		interrupt-parent = <&gpio3>;		/* Which interrupt controller the interrupt GPIO belongs to */
+		interrupts = <RK_PB0 IRQ_TYPE_EDGE_FALLING>;
+		microchip,irq-mirror;			/* Common INTA and INTB together */
+		/* The "present" mask, which is 1 bit for each chip present on
+		 * this SPI chip select line. We have one chip with all address
+		 * pins pulled low, so it's just 1.
+		 */
+		microchip,spi-present-mask = <0x1>;
+		pinctrl-0 = <&mcp23s17_reset &mcp23s17_irq>;
+		pinctrl-names = "default";
+		/* Which GPIO is used for resetting. Reset is active low. */
+		reset-gpios = <&gpio3 RK_PC4 GPIO_ACTIVE_LOW>;
+		#gpio-cells = <2>;			/* Required for GPIO controllers */
+		#interrupt-cells = <2>;
+	};
+};
+
+/* Copied from rk3568-pinctrl.dtsi */
+&pinctrl {
+	spi1 {
+		spi1m1_pins: spi1m1-pins {
+			rockchip,pins =
+				/* spi1_clkm1 */
+				<3 RK_PC3 3 &pcfg_pull_none>,
+				/* spi1_misom1 */
+				<3 RK_PC2 3 &pcfg_pull_none>,
+				/* spi1_mosim1 */
+				<3 RK_PC1 3 &pcfg_pull_none>;
+		};
+
+		spi1m1_cs0: spi1m1-cs0 {
+			rockchip,pins =
+				/* spi1_cs0m1 */
+				<3 RK_PA1 3 &pcfg_pull_none>;
+		};
+	};
+
+	mcp23s17 {
+		/* Change the pcfg to pull up the reset pin */
+		mcp23s17_reset: mcp23s17-reset {
+			rockchip,pins = <3 RK_PC4 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+
+		mcp23s17_irq: mcp23s17-irq {
+			rockchip,pins = <3 RK_PB0 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+};
