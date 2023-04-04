@@ -25,13 +25,22 @@ tree bindings here.
 ## Building
 
 Build the overlays with `make INCLUDE_DIR=path/to/linux/include`. They will be
-placed in the folder `build`.
+placed in the folder `build`. The path to Linux include should be a path to
+an extracted Linux source tree's `include/`, as distributions usually don't
+package the dt-bindings headers in their headers packages.
 
 Running `make clean` will recursively delete `build`, so don't store anything
 other than the built files in it.
 
 
 ## Installing
+
+### On Plebian
+
+Copy the `.dtbo` files you want to use from the build directory to `/boot/dtbo/`
+and run `sudo u-boot-update`.
+
+### Elsewhere
 
 Assuming you are booting with a `extlinux/extlinux.conf` on your `/boot`, you
 can copy the .dtbo files somewhere into `/boot` (e.g. `/boot/dtbs/overlays`)
