@@ -34,19 +34,28 @@
 		gpio-controller;			/* Point out that this is a GPIO controller */
 		interrupt-controller;			/* Point out that this is an interrupt controller */
 		interrupt-parent = <&gpio3>;		/* Which interrupt controller the interrupt GPIO belongs to */
-		interrupts = <RK_PB0 IRQ_TYPE_EDGE_FALLING>;
+		interrupts = <RK_PB0 IRQ_TYPE_LEVEL_LOW>;
 		microchip,irq-mirror;			/* Common INTA and INTB together */
 		/* The "present" mask, which is 1 bit for each chip present on
 		 * this SPI chip select line. We have one chip with all address
 		 * pins pulled low, so it's just 1.
 		 */
 		microchip,spi-present-mask = <0x1>;
-		pinctrl-0 = <&mcp23s17_reset &mcp23s17_irq>;
+		pinctrl-0 = <&mcp23s17_reset &mcp23s17_irq &mcp23s170pullups>;
 		pinctrl-names = "default";
 		/* Which GPIO is used for resetting. Reset is active low. */
 		reset-gpios = <&gpio3 RK_PC4 GPIO_ACTIVE_LOW>;
 		#gpio-cells = <2>;			/* Required for GPIO controllers */
 		#interrupt-cells = <2>;
+
+		/* Set all the pins to pull up bias */
+		mcp23s170pullups: pinmux {
+			pins =	"gpio0", "gpio1", "gpio2", "gpio3",
+				"gpio4", "gpio5", "gpio6", "gpio7",
+				"gpio8", "gpio9", "gpio10", "gpio11",
+				"gpio12", "gpio13", "gpio14", "gpio15";
+			bias-pull-up;	/* Only bias-pull-up is supported for this chip */
+		};
 	};
 };
 
