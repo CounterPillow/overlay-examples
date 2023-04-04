@@ -68,3 +68,11 @@ text if one references these examples during the writing of device trees.
 
 Please read `CONTRIBUTING.md` before attempting to contribute to this
 repository.
+
+
+## Requesting Overlays
+
+We're always happy to help people get the most out of their (mainline) boards!
+If you want an overlay to be written for a specific piece of hardware, open an
+issue describing what you're trying to do and we'll try to acquire the hardware
+ourselves to write an overlay for it.
