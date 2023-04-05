@@ -1,0 +1,52 @@
+/* SPDX-License-Identifier: MIT */
+
+/* This example overlay describes an MCP4821 12-bit DAC connected to the
+ * Quartz64 Model B's SPI pins on its pin header.
+ */
+
+/dts-v1/;
+/plugin/;			/* Identifies this as an overlay */
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+
+&spi1 {				/* We are modifying the spi1 node of the base tree */
+	/* Set the pin muxes to the M1 mux configuration */
+	pinctrl-0 = <&spi1m1_cs0 &spi1m1_pins>;
+	/* The next two are already set in the base tree we're overlaying onto,
+	 * but dtc doesn't know this, so it emits warnings. Either way, they
+	 * describe what the meaning of all the children's reg properties is. In
+	 * this case, that the only cell in reg describes what address the device
+	 * listens on.
+	 */
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";	/* Enable the spi1 node of rk356x.dtsi */
+
+	mcp4821: dac@0 {
+		compatible = "microchip,mcp4821";
+		reg = <0>;
+		vdd-supply = <&vcc3v3_sys>;
+	};
+};
+
+&pinctrl {
+	/* Copied from rk3568-pinctrl.dtsi */
+	spi1 {
+		spi1m1_pins: spi1m1-pins {
+			rockchip,pins =
+				/* spi1_clkm1 */
+				<3 RK_PC3 3 &pcfg_pull_none>,
+				/* spi1_misom1 */
+				<3 RK_PC2 3 &pcfg_pull_none>,
+				/* spi1_mosim1 */
+				<3 RK_PC1 3 &pcfg_pull_none>;
+		};
+
+		spi1m1_cs0: spi1m1-cs0 {
+			rockchip,pins =
+				/* spi1_cs0m1 */
+				<3 RK_PA1 3 &pcfg_pull_none>;
+		};
+	};
+};
