@@ -1,0 +1,16 @@
+/* SPDX-License-Identifier: MIT */
+
+/* This example enables USB host on SOQuartz connected to CM4-IO carrier */
+
+/dts-v1/;
+/plugin/;
+
+&usb2phy0_host {
+	phy-supply = <&vcc_5v>;
+	status = "okay";
+};
+
+&usb_host0_xhci {
+	dr_mode = "host";
+	status = "okay";
+};
